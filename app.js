@@ -130,44 +130,12 @@ app.post("/order", (req, res) => {
   });
 });
 
-// app.post("/order", (req, res) => {
-//   const inputDateTime = new Date(req.body.orderTime);
-//   const formattedDateTime = inputDateTime.toISOString().slice(0, 19).replace("T", " ");
-
-//   const insertOrder = "INSERT INTO `order` (orderTime, totalPrice, payment) VALUES (?, ?, ?)";
-//   const OrderValues = [formattedDateTime, req.body.totalPrice, req.body.payment];
-
-//   connection.query(insertOrder, OrderValues, (err, orderResult) => {
-//     if (err) {
-//       console.error("Error while inserting order data:", err);
-//       return res.status(500).json({
-//         code: 500,
-//         message: "Error while processing the request",
-//       });
-//     } else {
-//       const orderNumber = orderResult.insertId;
-
-//       const insertOrderItems = "INSERT INTO `orderItems` (orderNumber, item, qty) VALUES (?, ?, ?)";
-//       const ItemValues = [orderNumber, req.body.item, req.body.qty];
-//       console.log(ItemValues, "ItemValues");
-
-//       connection.query(insertOrderItems, ItemValues, (err, itemResult) => {
-//         if (err) {
-//           console.error("Error while inserting order items data:", err);
-//           return res.status(500).json({
-//             code: 500,
-//             message: "Error while processing the request",
-//           });
-//         } else {
-//           console.log(itemResult, "itemResult");
-//           return res.status(200).json({
-//             code: 200,
-//           });
-//         }
-//       });
-//     }
-//   });
-// });
+app.get("/adminCategories", (req, res) => {
+  connection.query("select * from adminCategories", (err, result) => {
+    console.log("adminCategories");
+    res.send(result);
+  });
+});
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
