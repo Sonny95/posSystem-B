@@ -137,6 +137,22 @@ app.get("/adminCategories", (req, res) => {
   });
 });
 
+app.get("/adminOrder", (req, res) => {
+  console.log(res);
+  connection.query("select * from order", (err, result) => {
+    console.log(result, "result");
+    console.log("adminOrder");
+    res.send(result);
+  });
+});
+
+app.get("/adminOrderDetail", (req, res) => {
+  connection.query("select * from orderItems", (err, result) => {
+    console.log("adminOrderDetail");
+    res.send(result);
+  });
+});
+
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
 });
