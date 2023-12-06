@@ -51,8 +51,9 @@ app.post("/order", (req, res) => {
   const inputDateTime = new Date(req.body.orderTime);
   const formattedDateTime = inputDateTime.toISOString().slice(0, 19).replace("T", " ");
 
-  const insertOrder = "INSERT INTO `order` (orderTime, totalPrice, payment) VALUES (?, ?, ?)";
-  const OrderValues = [formattedDateTime, req.body.totalPrice, req.body.payment];
+  const insertOrder =
+    "INSERT INTO `order` (orderTime, totalPrice, payment, totalQty) VALUES (?, ?, ?, ?)";
+  const OrderValues = [formattedDateTime, req.body.totalPrice, req.body.payment, req.body.totalQty];
 
   //regarding transaction error
   connection.beginTransaction((err) => {
@@ -138,21 +139,51 @@ app.get("/adminCategories", (req, res) => {
 });
 
 app.get("/adminOrder", (req, res) => {
-  console.log(res);
-  connection.query("select * from order", (err, result) => {
-    console.log(result, "result");
-    console.log("adminOrder");
-    res.send(result);
+  const page = req.query.page || 1;
+  const itemsPerPage = 10;
+  const offset = (page - 1) * itemsPerPage;
+
+  // 먼저 전체 아이템의 개수를 가져옵니다.
+  connection.query("SELECT COUNT(*) as totalCount FROM `order`", (err, countResult) => {
+    if (err) {
+      console.error(err);
+      res.status(500).send("Internal Server Error");
+      return;
+    }
+
+    const totalCount = countResult[0].totalCount;
+    const totalPages = Math.ceil(totalCount / itemsPerPage);
+
+    // 현재 페이지에 해당하는 아이템만을 반환합니다.
+    connection.query(
+      `SELECT * FROM \`order\` ORDER BY \`orderTime\` DESC LIMIT ${itemsPerPage} OFFSET ${offset}`,
+      (err, result) => {
+        if (err) {
+          console.error(err);
+          res.status(500).send("Internal Server Error");
+          return;
+        }
+        // 페이지 수 같이 보냄
+        res.send({ data: { result, totalPages } });
+      }
+    );
   });
 });
 
-app.get("/adminOrderDetail", (req, res) => {
-  connection.query("select * from orderItems", (err, result) => {
+app.get("/adminOrderDetail/:id", (req, res) => {
+  const orderId = req.params.id;
+
+  connection.query("SELECT * FROM orderItems WHERE orderNumber = ?", [orderId], (err, result) => {
+    if (err) {
+      console.error(err);
+      res.status(500).send("Internal Server Error");
+      return;
+    }
+
     console.log("adminOrderDetail");
     res.send(result);
   });
 });
-
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
 });
