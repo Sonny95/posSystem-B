@@ -1,3 +1,5 @@
+require("dotenv").config();
+
 const express = require("express");
 const app = express();
 const port = 8080;
@@ -14,12 +16,14 @@ app.use(cors(corsOptions));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-let connection = mysql.createConnection({
-  host: "127.0.0.1",
-  user: "root",
-  password: "Sonny0401@",
-  database: "posSystem",
-});
+const connection = mysql.createConnection(process.env.DATABASE_URL);
+
+// let connection = mysql.createConnection({
+//   host: "127.0.0.1",
+//   user: "root",
+//   password: "Sonny0401@",
+//   database: "posSystem",
+// });
 
 connection.connect(function (err) {
   if (err) {
@@ -94,7 +98,7 @@ app.post("/order", (req, res) => {
           orderItem.item,
           orderItem.qty,
         ]);
-        //insert to orderItems table
+        //INSERT to ORDERITEMS table
         connection.query(insertOrderItems, [orderItemsValues], (err, itemResult) => {
           if (err) {
             //if fail reverse it
@@ -142,31 +146,62 @@ app.get("/adminOrder", (req, res) => {
   const page = req.query.page || 1;
   const itemsPerPage = 10;
   const offset = (page - 1) * itemsPerPage;
+  const selectedStatus = req.query.status || "Pending";
+  const whereClause =
+    selectedStatus === "Pending"
+      ? "WHERE status = 'Pending' OR status IS NULL"
+      : "WHERE status = 'Completed'";
 
-  // 먼저 전체 아이템의 개수를 가져옵니다.
-  connection.query("SELECT COUNT(*) as totalCount FROM `order`", (err, countResult) => {
-    if (err) {
-      console.error(err);
-      res.status(500).send("Internal Server Error");
-      return;
-    }
-
-    const totalCount = countResult[0].totalCount;
-    const totalPages = Math.ceil(totalCount / itemsPerPage);
-
-    // 현재 페이지에 해당하는 아이템만을 반환합니다.
-    connection.query(
-      `SELECT * FROM \`order\` ORDER BY \`orderTime\` DESC LIMIT ${itemsPerPage} OFFSET ${offset}`,
-      (err, result) => {
-        if (err) {
-          console.error(err);
-          res.status(500).send("Internal Server Error");
-          return;
-        }
-        // 페이지 수 같이 보냄
-        res.send({ data: { result, totalPages } });
+  // 먼저 전체 아이템에서 펜딩인지 컴플리트인지 거르기
+  connection.query(
+    `SELECT COUNT(*) as totalCount FROM \`order\` ${whereClause}`,
+    (err, countResult) => {
+      if (err) {
+        console.error(err);
+        res.status(500).send("Internal Server Error");
+        return;
       }
-    );
+
+      const totalCount = countResult[0].totalCount;
+      const totalPages = Math.ceil(totalCount / itemsPerPage);
+
+      // 현재 페이지에 해당하는 아이템만을 반환합니다.
+      connection.query(
+        `SELECT * FROM \`order\` ${whereClause} ORDER BY \`orderTime\` DESC LIMIT ${itemsPerPage} OFFSET ${offset}`,
+        (err, result) => {
+          if (err) {
+            console.error(err);
+            res.status(500).send("Internal Server Error");
+            return;
+          }
+
+          res.send({ data: { result, totalPages } });
+        }
+      );
+    }
+  );
+});
+
+app.post("/updateStatus/:updateId", (req, res) => {
+  const orderId = req.params.updateId;
+  const newStatus = req.body.status;
+
+  const updateStatusQuery = "UPDATE `order` SET status = ? WHERE id = ?";
+  const updateStatusValues = [newStatus, orderId];
+
+  connection.query(updateStatusQuery, updateStatusValues, (err, result) => {
+    if (err) {
+      console.error("Error while updating status:", err);
+      return res.status(500).json({
+        code: 500,
+        message: "Error while processing the request",
+      });
+    } else {
+      console.log(result, "statusResult");
+      return res.status(200).json({
+        code: 200,
+      });
+    }
   });
 });
 
