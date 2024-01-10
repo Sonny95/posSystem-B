@@ -3,7 +3,7 @@ require("dotenv").config();
 const express = require("express");
 const app = express();
 const port = 8080;
-const mysql = require("mysql");
+const mysql = require("mysql2");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 
@@ -16,27 +16,26 @@ app.use(cors(corsOptions));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-const url = require("url");
+const connection = mysql.createConnection(process.env.DATABASE_URL);
 
-const databaseUrl = process.env.DATABASE_URL;
-const parsedUrl = new URL(databaseUrl);
+// const url = require("url");
 
-console.log("Host:", parsedUrl.host);
-console.log("Username:", parsedUrl.username);
-console.log("Password:", parsedUrl.password);
-console.log("Port:", parsedUrl.port);
-console.log("Pathname:", parsedUrl.pathname);
+// const databaseUrl = process.env.DATABASE_URL;
+// const parsedUrl = new URL(databaseUrl);
 
-// const connection = mysql.createConnection(process.env.DATABASE_URL);
+// console.log("Host:", parsedUrl.host);
+// console.log("Username:", parsedUrl.username);
+// console.log("Password:", parsedUrl.password);
+// console.log("Port:", parsedUrl.port);
+// console.log("Pathname:", parsedUrl.pathname);
 
-const connection = mysql.createConnection({
-  host: "aws.connect.psdb.cloud",
-  user: "1l28mts9d06hxrrb920t",
-  password: "pscale_pw_PDok7xul6LTHm95b6f1yo9l6sNC8VTVStWlvpHVUm1u",
-  database: "possystem",
-  port: 3306,
-  ssl: JSON.parse(process.env.DATABASE_SSL),
-});
+// const connection = mysql.createConnection({
+//   host: "aws.connect.psdb.cloud",
+//   user: process.env.DATABASE_USER,
+//   password: process.env.DATABASE_PASSWORD,
+//   database: "possystem",
+//   ssl: JSON.parse(process.env.DATABASE_SSL || "{}"),
+// });
 
 // let connection = mysql.createConnection({
 //   host: "127.0.0.1",
