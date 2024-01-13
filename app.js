@@ -17,25 +17,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 const connection = mysql.createConnection(process.env.DATABASE_URL);
-
-// const url = require("url");
-
-// const databaseUrl = process.env.DATABASE_URL;
-// const parsedUrl = new URL(databaseUrl);
-
-// console.log("Host:", parsedUrl.host);
-// console.log("Username:", parsedUrl.username);
-// console.log("Password:", parsedUrl.password);
-// console.log("Port:", parsedUrl.port);
-// console.log("Pathname:", parsedUrl.pathname);
-
-// const connection = mysql.createConnection({
-//   host: "aws.connect.psdb.cloud",
-//   user: process.env.DATABASE_USER,
-//   password: process.env.DATABASE_PASSWORD,
-//   database: "possystem",
-//   ssl: JSON.parse(process.env.DATABASE_SSL || "{}"),
-// });
+console.log("Connected to PlanetScale!");
 
 // let connection = mysql.createConnection({
 //   host: "127.0.0.1",
