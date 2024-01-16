@@ -9,7 +9,7 @@ const bodyParser = require("body-parser");
 
 let corsOptions = {
   origin: "*",
-  credential: true,
+  credentials: true,
 };
 app.use(cors(corsOptions));
 
